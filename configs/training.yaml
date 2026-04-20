@@ -1,0 +1,26 @@
+model:
+  name: yolov8n
+  pretrained: true
+  
+data:
+  imgsz: 640
+  batch_size: 16
+  workers: 2
+  
+training:
+  epochs: 50
+  optimizer: AdamW
+  lr0: 0.001
+  weight_decay: 0.0001
+  patience: 20
+  
+augment:
+  enabled: true
+  mosaic: 1.0
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  
+device:
+  cuda: true
+  amp: true
