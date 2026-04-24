@@ -20,7 +20,7 @@ from src.loss    import YOLOLoss
 from src.metrics import decode_predictions, compute_map50
 from src.utils   import (
     load_config, get_device, setup_dirs,
-    save_checkpoint, box_cxcywh_to_xyxy,
+    save_checkpoint, load_checkpoint, box_cxcywh_to_xyxy,
 )
 
 
