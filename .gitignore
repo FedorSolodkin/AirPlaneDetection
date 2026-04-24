@@ -50,6 +50,7 @@ data/
 *.jpg
 *.png
 *.txt
+!requirements.txt
 
 # Checkpoints
 *.pt
