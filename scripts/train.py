@@ -12,7 +12,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import torch
 from torch.utils.data import DataLoader
-from torch.cuda.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler
 
 from src.dataset import YOLODataset, collate_fn
 from src.model   import YOLO
@@ -80,7 +80,7 @@ def train_one_epoch(model, criterion, optim, loader, device, scaler,
         targets  = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         optim.zero_grad(set_to_none=True)
-        with autocast(enabled=amp):
+        with autocast('cuda', enabled=amp):
             out = model(imgs)
             losses = criterion(out, targets)
 
@@ -116,7 +116,7 @@ def evaluate(model, criterion, loader, device, cfg, amp: bool):
     for imgs, targets in loader:
         imgs      = imgs.to(device, non_blocking=True)
         targets_d = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        with autocast(enabled=amp):
+        with autocast('cuda', enabled=amp):
             out = model(imgs)
             losses = criterion(out, targets_d)
 
@@ -166,7 +166,7 @@ def main(args):
     epochs    = int(cfg["training"]["epochs"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, T_max=epochs)
     amp       = bool(cfg["device"]["amp"])
-    scaler    = GradScaler(enabled=amp)
+    scaler    = GradScaler('cuda', enabled=amp)
     clip_max  = float(cfg["training"]["clip_max_norm"])
 
     ckpt_dir = Path("assets/models")
