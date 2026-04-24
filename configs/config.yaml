@@ -1,8 +1,10 @@
 data:
+  # Корневая папка датасета
   path: ./data/hrplanes
-  train: train/images
-  val: val/images
-  test: test/images
+  # Txt-файлы со списками путей к изображениям (относительно корня проекта)
+  train: ./data/hrplanes/train.txt
+  val:   ./data/hrplanes/validation.txt
+  test:  ./data/hrplanes/test.txt
   imgsz: 640
   batch_size: 16
   workers: 4
@@ -10,7 +12,7 @@ data:
 model:
   num_classes: 1
   pretrained: true
-  stride: 16             # backbone stride = 16 (ResNet18 up to layer3)
+  stride: 16             # stride backbone = 16 (ResNet18 до layer3)
 
 loss:
   w_obj: 1.0
@@ -20,14 +22,14 @@ loss:
 
 training:
   epochs: 100
-  lr0: 1.0e-3            # lr for head + neck
-  lr_backbone: 1.0e-4    # lr for ResNet backbone
+  lr0: 1.0e-3            # lr для head + neck
+  lr_backbone: 1.0e-4    # lr для ResNet backbone
   weight_decay: 1.0e-4
   clip_max_norm: 10.0
 
 eval:
   conf_thresh: 0.05
-  top_k: 100             # max detections per image after filtering
+  top_k: 100             # максимум детекций на изображение после фильтрации
 
 device:
   cuda: true

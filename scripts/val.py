@@ -23,11 +23,11 @@ def run(config_path: str, ckpt_path: str, split: str = "val"):
     cfg    = load_config(config_path)
     device = get_device()
 
-    base     = Path(cfg["data"]["path"])
-    img_rel  = cfg["data"][split]
-    lbl_rel  = img_rel.replace("images", "labels")
-    ds = YOLODataset(base / img_rel, base / lbl_rel,
-                      img_size=cfg["data"]["imgsz"], augment=False)
+    split_key = "val" if split == "val" else split
+    ds = YOLODataset(
+        split_file=cfg["data"][split_key],
+        img_size=cfg["data"]["imgsz"], augment=False,
+    )
     loader = DataLoader(ds, batch_size=cfg["data"]["batch_size"], shuffle=False,
                          num_workers=cfg["data"]["workers"], collate_fn=collate_fn)
     print(f"сплит={split}   размер={len(ds)}")
