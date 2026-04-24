@@ -37,12 +37,15 @@ class YOLODataset(Dataset):
             # Режим split-файла: читаем список путей из txt
             split_file = Path(split_file)
             lines = split_file.read_text().splitlines()
+            # Корень проекта: data/hrplanes/train.txt -> data/hrplanes -> data -> project_root
+            project_root = Path(split_file).resolve().parent.parent.parent
             self.paths = []
             for line in lines:
                 line = line.strip()
                 if not line:
                     continue
-                p = Path(line)
+                # Если путь относительный — резолвим от корня проекта
+                p = Path(line) if Path(line).is_absolute() else project_root / line
                 # Метка лежит рядом с изображением, расширение .txt
                 lbl = p.with_suffix(".txt")
                 if p.exists() and lbl.exists():
