@@ -176,8 +176,22 @@ def main(args):
     epoch_dir = ckpt_dir / "epochs"
     epoch_dir.mkdir(parents=True, exist_ok=True)
 
-    best_map = 0.0
-    for epoch in range(1, epochs + 1):
+    # Возобновление с чекпоинта (--resume)
+    start_epoch = 1
+    best_map    = 0.0
+    if args.resume:
+        ckpt_path = Path(args.resume)
+        if ckpt_path.exists():
+            start_epoch, best_map = load_checkpoint(ckpt_path, model, optim, device=str(device))
+            start_epoch += 1  # продолжаем со следующей эпохи
+            # Восстанавливаем состояние LR-scheduler (прокручиваем start_epoch-1 шагов)
+            for _ in range(start_epoch - 1):
+                scheduler.step()
+            print(f"Возобновление с эпохи {start_epoch}, best_mAP={best_map:.4f}")
+        else:
+            print(f"Чекпоинт не найден: {ckpt_path}, начинаем с нуля")
+
+    for epoch in range(start_epoch, epochs + 1):
         print(f"\n=== Epoch {epoch}/{epochs}   "
               f"lr_head={optim.param_groups[0]['lr']:.2e}   "
               f"lr_bb={optim.param_groups[1]['lr']:.2e} ===")
@@ -206,4 +220,7 @@ def main(args):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="configs/config.yaml")
+    p.add_argument("--resume", default=None,
+                   help="Путь к чекпоинту для возобновления обучения, "
+                        "например assets/models/epochs/epoch_015.pt")
     main(p.parse_args())
