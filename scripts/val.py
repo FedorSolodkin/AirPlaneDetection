@@ -26,6 +26,7 @@ def run(config_path: str, ckpt_path: str, split: str = "val"):
     split_key = "val" if split == "val" else split
     ds = YOLODataset(
         split_file=cfg["data"][split_key],
+        img_root=cfg["data"].get("img_dir"),
         img_size=cfg["data"]["imgsz"], augment=False,
     )
     loader = DataLoader(ds, batch_size=cfg["data"]["batch_size"], shuffle=False,

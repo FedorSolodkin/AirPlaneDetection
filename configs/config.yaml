@@ -1,6 +1,8 @@
 data:
   # Корневая папка датасета
   path: ./data/hrplanes
+  # Папка с изображениями и метками (изображения и .txt лежат рядом)
+  img_dir: ./data/hrplanes/img
   # Txt-файлы со списками путей к изображениям (относительно корня проекта)
   train: ./data/hrplanes/train.txt
   val:   ./data/hrplanes/validation.txt

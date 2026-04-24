@@ -16,7 +16,7 @@ from .transform import letterbox, reproject_labels, augment as aug_fn, to_tensor
 
 class YOLODataset(Dataset):
     def __init__(self, img_dir=None, label_dir=None,
-                 split_file=None,
+                 split_file=None, img_root=None,
                  img_size: int = 640, augment: bool = False):
         """
         Параметры
@@ -25,6 +25,10 @@ class YOLODataset(Dataset):
             Путь к txt-файлу со списком путей к изображениям.
             Метки ищутся рядом с изображением (тот же каталог, расширение .txt).
             Если задан — img_dir и label_dir игнорируются.
+        img_root : str | Path | None
+            Если задан — берём только имя файла из split_file и ищем его здесь.
+            Нужно когда пути в split_file указывают не туда (data/plane/img/
+            вместо реального data/hrplanes/img/).
         img_dir : str | Path | None
             Папка с изображениями (классический режим).
         label_dir : str | Path | None
@@ -37,6 +41,7 @@ class YOLODataset(Dataset):
             # Режим split-файла: читаем список путей из txt
             split_file = Path(split_file)
             lines = split_file.read_text().splitlines()
+            img_root_path = Path(img_root).resolve() if img_root else None
             # Корень проекта: data/hrplanes/train.txt -> data/hrplanes -> data -> project_root
             project_root = Path(split_file).resolve().parent.parent.parent
             self.paths = []
@@ -44,8 +49,12 @@ class YOLODataset(Dataset):
                 line = line.strip()
                 if not line:
                     continue
-                # Если путь относительный — резолвим от корня проекта
-                p = Path(line) if Path(line).is_absolute() else project_root / line
+                if img_root_path is not None:
+                    # Берём только имя файла, ищем в реальной папке с изображениями
+                    p = img_root_path / Path(line).name
+                else:
+                    # Резолвим путь от корня проекта
+                    p = Path(line) if Path(line).is_absolute() else project_root / line
                 # Метка лежит рядом с изображением, расширение .txt
                 lbl = p.with_suffix(".txt")
                 if p.exists() and lbl.exists():

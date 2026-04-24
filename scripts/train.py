@@ -28,13 +28,16 @@ from src.utils   import (
 # Построители компонентов
 # ------------------------------------------------------------------
 def build_loaders(cfg):
-    sz = cfg["data"]["imgsz"]
+    sz       = cfg["data"]["imgsz"]
+    img_root = cfg["data"].get("img_dir")  # реальная папка с изображениями
     train_ds = YOLODataset(
         split_file=cfg["data"]["train"],
+        img_root=img_root,
         img_size=sz, augment=True,
     )
     val_ds = YOLODataset(
         split_file=cfg["data"]["val"],
+        img_root=img_root,
         img_size=sz, augment=False,
     )
     train_loader = DataLoader(
