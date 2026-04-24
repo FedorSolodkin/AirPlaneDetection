@@ -1,0 +1,37 @@
+data:
+  path: ./data/hrplanes
+  train: train/images
+  val: val/images
+  test: test/images
+  imgsz: 640
+  batch_size: 16
+  workers: 4
+
+model:
+  num_classes: 1
+  pretrained: true
+  stride: 16             # backbone stride = 16 (ResNet18 up to layer3)
+
+loss:
+  w_obj: 1.0
+  w_noobj: 0.5
+  w_bbox: 5.0
+  w_cls: 1.0
+
+training:
+  epochs: 100
+  lr0: 1.0e-3            # lr for head + neck
+  lr_backbone: 1.0e-4    # lr for ResNet backbone
+  weight_decay: 1.0e-4
+  clip_max_norm: 10.0
+
+eval:
+  conf_thresh: 0.05
+  top_k: 100             # max detections per image after filtering
+
+device:
+  cuda: true
+  amp: true
+
+names:
+  0: airplane
