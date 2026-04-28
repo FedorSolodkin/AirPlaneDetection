@@ -1,21 +1,4 @@
-"""Небольшой беcякорный детектор в стиле YOLO.
 
-Backbone: ResNet-18, урезанный до layer3 (stride 16, 256 каналов),
-          инициализированный весами ImageNet из torchvision.
-Neck:     свёртка 3x3 + BN + SiLU, 256 каналов.
-Head:     свёртка 1x1, выдающая 5 + num_classes каналов на каждую ячейку сетки:
-            - 1 логит objectness (наличие объекта)
-            - 4 параметра бокса (cx, cy, w, h), каждый в [0, 1] через sigmoid,
-              интерпретируются относительно всего (letterboxed) изображения
-            - num_classes логитов классов
-
-Выход:
-    {
-      "obj":  [B, H, W]            -- сырые логиты (до sigmoid)
-      "bbox": [B, H, W, 4]         -- cxcywh после sigmoid, в [0, 1]
-      "cls":  [B, H, W, C]         -- сырые логиты классов
-    }
-"""
 import torch
 from torch import nn
 from torchvision.models import resnet18, ResNet18_Weights
@@ -49,7 +32,7 @@ class YOLO(nn.Module):
         f = self.neck(f)
         out = self.head(f).permute(0, 2, 3, 1).contiguous()   # [B, H, W, 5+C]
         return {
-            "obj":  out[..., 0],                              # сырые логиты
-            "bbox": out[..., 1:5].sigmoid(),                  # координаты в [0, 1]
-            "cls":  out[..., 5:],                             # логиты классов
+            "obj":  out[..., 0],        # сырые логиты
+            "bbox": out[..., 1:5],      # сырые логиты боксов (декодируются через decode_boxes)
+            "cls":  out[..., 5:],       # логиты классов
         }

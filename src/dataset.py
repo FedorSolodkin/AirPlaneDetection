@@ -1,10 +1,4 @@
-"""Датасет в формате YOLO: один .jpg на изображение + один .txt на изображение
-с записями `cls cx cy w h` (нормализованные координаты, центральная форма).
 
-Поддерживает два режима:
-  1. split_file — путь к txt-файлу со списком путей к изображениям (train.txt / validation.txt / test.txt)
-  2. img_dir + label_dir — папки с изображениями и метками (классическая структура YOLO)
-"""
 from pathlib import Path
 import numpy as np
 import torch
@@ -18,22 +12,6 @@ class YOLODataset(Dataset):
     def __init__(self, img_dir=None, label_dir=None,
                  split_file=None, img_root=None,
                  img_size: int = 640, augment: bool = False):
-        """
-        Параметры
-        ----------
-        split_file : str | Path | None
-            Путь к txt-файлу со списком путей к изображениям.
-            Метки ищутся рядом с изображением (тот же каталог, расширение .txt).
-            Если задан — img_dir и label_dir игнорируются.
-        img_root : str | Path | None
-            Если задан — берём только имя файла из split_file и ищем его здесь.
-            Нужно когда пути в split_file указывают не туда (data/plane/img/
-            вместо реального data/hrplanes/img/).
-        img_dir : str | Path | None
-            Папка с изображениями (классический режим).
-        label_dir : str | Path | None
-            Папка с метками (классический режим).
-        """
         self.img_size = int(img_size)
         self.augment  = bool(augment)
 

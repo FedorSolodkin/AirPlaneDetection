@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from .utils import box_cxcywh_to_xyxy, ciou
+from .utils import box_cxcywh_to_xyxy, ciou, decode_boxes
 
 
 class YOLOLoss(nn.Module):
@@ -38,10 +38,9 @@ class YOLOLoss(nn.Module):
             gx = (boxes[:, 0] * W).clamp(0, W - 1).long()
             gy = (boxes[:, 1] * H).clamp(0, H - 1).long()
             # Более поздние боксы перезаписывают предыдущие в той же ячейке
-            # (простое решение, подходит для разреженных сцен как HRPlanes).
-            obj_t[b, gy, gx]      = 1.0
-            box_t[b, gy, gx]      = boxes
-            mask [b, gy, gx]      = True
+            obj_t[b, gy, gx]         = 1.0
+            box_t[b, gy, gx]         = boxes      # сохраняем оригинальные нормализованные боксы
+            mask [b, gy, gx]         = True
             cls_t[b, gy, gx, labels] = 1.0
         return obj_t, box_t, cls_t, mask
 
@@ -68,8 +67,10 @@ class YOLOLoss(nn.Module):
 
         # ---- бокс (CIoU на совпавших ячейках) ----
         if mask.any():
-            pred_boxes = outputs["bbox"][mask]
-            tgt_boxes  = box_t[mask]
+            # Декодируем предсказания из смещений относительно ячеек
+            pred_boxes_full = decode_boxes(outputs["bbox"])   # [B, H, W, 4] нормализованные
+            pred_boxes = pred_boxes_full[mask]                # [N, 4]
+            tgt_boxes  = box_t[mask]                          # [N, 4] оригинальные нормализованные
             box_loss = (1 - ciou(
                 box_cxcywh_to_xyxy(pred_boxes),
                 box_cxcywh_to_xyxy(tgt_boxes),

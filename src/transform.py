@@ -1,4 +1,4 @@
-"""Преобразования изображений и меток: letterbox, аугментации, конвертация в тензор."""
+
 import random
 import numpy as np
 import torch
@@ -11,9 +11,7 @@ IMAGENET_STD  = [0.229, 0.224, 0.225]
 
 
 def letterbox(img: Image.Image, new_size: int):
-    """Масштабирует изображение с сохранением пропорций и дополняет до квадрата размером `new_size`.
-    Возвращает холст и параметры, необходимые для пересчёта координат в обоих направлениях.
-    """
+  
     w, h = img.size
     scale = new_size / max(w, h)
     nw, nh = int(round(w * scale)), int(round(h * scale))
@@ -27,7 +25,7 @@ def letterbox(img: Image.Image, new_size: int):
 
 def reproject_labels(labels: np.ndarray, scale: float, pad_x: int, pad_y: int,
                       orig_w: int, orig_h: int, new_size: int) -> np.ndarray:
-    """Пересчитывает метки из нормализованных координат оригинала в нормализованные координаты холста."""
+  
     if len(labels) == 0:
         return labels
     cx = labels[:, 1] * orig_w * scale + pad_x
@@ -43,7 +41,7 @@ def reproject_labels(labels: np.ndarray, scale: float, pad_x: int, pad_y: int,
 
 
 def augment(img: Image.Image, labels: np.ndarray):
-    """Простые аугментации: горизонтальный флип + изменение цвета. Метки синхронизируются с изображением."""
+   
     if random.random() < 0.5:
         img = TF.hflip(img)
         if len(labels):

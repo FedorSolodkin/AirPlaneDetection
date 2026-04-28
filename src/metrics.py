@@ -1,8 +1,8 @@
-"""Декодирование выходов модели и вычисление mAP@0.5."""
+
 from collections import defaultdict
 import torch
 
-from .utils import box_cxcywh_to_xyxy, box_iou, nms
+from .utils import box_cxcywh_to_xyxy, box_iou, nms, decode_boxes
 
 
 @torch.no_grad()
@@ -15,7 +15,7 @@ def decode_predictions(outputs: dict, img_size: int,
     """
     B, H, W = outputs["obj"].shape
     obj = outputs["obj"].sigmoid()                    # [B, H, W]
-    box = outputs["bbox"] * img_size                  # pixel cxcywh on canvas
+    box = decode_boxes(outputs["bbox"]) * img_size    # [B,H,W,4] пиксельные cxcywh
     cls = outputs["cls"].softmax(-1)                  # [B, H, W, C]
     C   = cls.shape[-1]
     results = []

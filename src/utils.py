@@ -46,6 +46,36 @@ def load_checkpoint(path, model, optimizer=None, device: str = "cpu"):
 # Математика боксов
 # ============================================================
 
+def decode_boxes(raw: torch.Tensor) -> torch.Tensor:
+    """Декодирует сырые логиты боксов в нормализованные координаты изображения.
+
+    Вместо абсолютных координат модель предсказывает смещение от центра ячейки:
+      cx = (cell_x + sigmoid(tx)) / W  — центр X относительно всего изображения
+      cy = (cell_y + sigmoid(ty)) / H  — центр Y
+      w  = sigmoid(tw)                 — нормализованная ширина
+      h  = sigmoid(th)                 — нормализованная высота
+
+    raw: [B, H, W, 4] — сырые логиты из головы модели
+    Возвращает: [B, H, W, 4] — нормализованные cxcywh в [0, 1]
+    """
+    B, H, W, _ = raw.shape
+    device = raw.device
+
+    # Сетка позиций ячеек
+    gy, gx = torch.meshgrid(
+        torch.arange(H, dtype=torch.float32, device=device),
+        torch.arange(W, dtype=torch.float32, device=device),
+        indexing='ij',
+    )
+
+    cx = (gx + raw[..., 0].sigmoid()) / W
+    cy = (gy + raw[..., 1].sigmoid()) / H
+    w  = raw[..., 2].sigmoid()
+    h  = raw[..., 3].sigmoid()
+
+    return torch.stack([cx, cy, w, h], dim=-1).clamp(0.0, 1.0)
+
+
 def box_cxcywh_to_xyxy(x: torch.Tensor) -> torch.Tensor:
     cx, cy, w, h = x.unbind(-1)
     return torch.stack([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], dim=-1)
